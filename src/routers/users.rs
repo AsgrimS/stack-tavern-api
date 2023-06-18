@@ -5,7 +5,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
-pub fn get_users_router() -> Router {
+pub fn users_router() -> Router {
     Router::new()
         .route("/:id", get(|| async {}))
         .route("/", post(create_user))
