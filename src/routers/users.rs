@@ -1,14 +1,8 @@
-use axum::{
-    http::StatusCode,
-    routing::{get, post},
-    Json, Router,
-};
+use axum::{http::StatusCode, routing::get, Json, Router};
 use serde::{Deserialize, Serialize};
 
 pub fn users_router() -> Router {
-    Router::new()
-        .route("/:id", get(|| async {}))
-        .route("/", post(create_user))
+    Router::new().route("/", get(|| async { "ok" }).post(create_user))
 }
 
 async fn create_user(
@@ -38,4 +32,37 @@ struct CreateUser {
 struct User {
     id: u64,
     username: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use axum::{
+        body::Body,
+        http::{Request, StatusCode},
+        Router,
+    };
+    use tower::ServiceExt;
+
+    use crate::tests::app;
+
+    #[rstest::rstest]
+    #[tokio::test]
+    async fn get_user(app: Router) {
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/users")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
+        let response_text = String::from_utf8(body.to_vec()).unwrap();
+
+        assert_eq!(response_text, "ok");
+    }
 }

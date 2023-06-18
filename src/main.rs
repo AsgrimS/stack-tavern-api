@@ -40,18 +40,23 @@ fn app() -> Router {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use axum::{
         body::Body,
         http::{Request, StatusCode},
         Router,
     };
+    use rstest::*;
     use tower::ServiceExt;
 
-    mod fixtures;
-    use fixtures::app;
+    use super::app as app_router;
 
-    #[rstest::rstest]
+    #[fixture]
+    pub fn app() -> Router {
+        app_router()
+    }
+
+    #[rstest]
     #[tokio::test]
     async fn hello_world(app: Router) {
         let response = app
@@ -62,7 +67,8 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
-        let reponse = String::from_utf8(body.to_vec()).unwrap();
-        assert_eq!(reponse, "Hello, world!");
+        let response_text = String::from_utf8(body.to_vec()).unwrap();
+
+        assert_eq!(response_text, "Hello, world!");
     }
 }
