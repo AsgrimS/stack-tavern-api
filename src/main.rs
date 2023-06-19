@@ -43,7 +43,7 @@ fn app() -> Router {
 pub mod tests {
     use std::{future::Future, pin::Pin};
 
-    use super::*;
+    use super::app as app_router;
     use axum::{
         body::BoxBody,
         http::{Request, StatusCode},
@@ -55,19 +55,18 @@ pub mod tests {
     use tower::ServiceExt;
 
     #[fixture]
-    pub fn app_router() -> Router {
-        app()
+    pub fn app() -> Router {
+        app_router()
     }
 
     pub type AppGet<'a> =
-        Box<dyn Fn(&'a str) -> Pin<Box<dyn Future<Output = Response<BoxBody>> + 'a>> + 'a>;
+        Box<dyn Fn(&'a str) -> Pin<Box<dyn Future<Output = Response<BoxBody>> + 'a>>>;
     #[fixture]
-    pub fn get<'a>(app_router: Router) -> AppGet<'a> {
+    pub fn get<'a>(app: Router) -> AppGet<'a> {
         Box::new(move |url| {
-            let app_router = app_router.clone();
+            let app = app.clone();
             Box::pin(async move {
-                app_router
-                    .oneshot(Request::builder().uri(url).body(Body::empty()).unwrap())
+                app.oneshot(Request::builder().uri(url).body(Body::empty()).unwrap())
                     .await
                     .unwrap()
             })
