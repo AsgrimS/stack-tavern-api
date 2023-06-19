@@ -6,6 +6,7 @@ use tracing::Level;
 use tracing_subscriber::fmt;
 
 mod routers;
+mod schemas;
 use crate::routers::users::users_router;
 
 #[tokio::main]
