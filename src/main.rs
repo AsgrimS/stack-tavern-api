@@ -41,28 +41,43 @@ fn app() -> Router {
 
 #[cfg(test)]
 pub mod tests {
+    use std::{future::Future, pin::Pin};
+
+    use super::*;
     use axum::{
-        body::Body,
+        body::BoxBody,
         http::{Request, StatusCode},
+        response::Response,
         Router,
     };
+    use hyper::Body;
     use rstest::*;
     use tower::ServiceExt;
 
-    use super::app as app_router;
-
     #[fixture]
-    pub fn app() -> Router {
-        app_router()
+    pub fn app_router() -> Router {
+        app()
+    }
+
+    pub type AppGet<'a> =
+        Box<dyn Fn(&'a str) -> Pin<Box<dyn Future<Output = Response<BoxBody>> + 'a>> + 'a>;
+    #[fixture]
+    pub fn get<'a>(app_router: Router) -> AppGet<'a> {
+        Box::new(move |url| {
+            let app_router = app_router.clone();
+            Box::pin(async move {
+                app_router
+                    .oneshot(Request::builder().uri(url).body(Body::empty()).unwrap())
+                    .await
+                    .unwrap()
+            })
+        })
     }
 
     #[rstest]
     #[tokio::test]
-    async fn hello_world(app: Router) {
-        let response = app
-            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
-            .await
-            .unwrap();
+    async fn hello_world(get: AppGet<'_>) {
+        let response = get("/").await;
 
         assert_eq!(response.status(), StatusCode::OK);
 

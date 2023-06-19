@@ -36,27 +36,14 @@ struct User {
 
 #[cfg(test)]
 mod tests {
-    use axum::{
-        body::Body,
-        http::{Request, StatusCode},
-        Router,
-    };
-    use tower::ServiceExt;
+    use axum::http::StatusCode;
 
-    use crate::tests::app;
+    use crate::tests::{get, AppGet};
 
     #[rstest::rstest]
     #[tokio::test]
-    async fn get_user(app: Router) {
-        let response = app
-            .oneshot(
-                Request::builder()
-                    .uri("/users")
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
+    async fn get_user(get: AppGet<'_>) {
+        let response = get("/users").await;
 
         assert_eq!(response.status(), StatusCode::OK);
 
