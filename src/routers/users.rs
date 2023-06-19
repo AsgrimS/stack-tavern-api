@@ -43,8 +43,7 @@ async fn create_user(Json(payload): Json<CreateUser>) -> Response {
     let url = env::var("DATABASE_URL").expect("database URL to be in .env");
     let pool = sqlx::postgres::PgPool::connect(url.as_str()).await.unwrap();
 
-    let Ok(_) = sqlx::query_as!(
-        User,
+    let Ok(_) = sqlx::query!(
         "INSERT INTO users (username, email) VALUES ($1, $2)",
         payload.username,
         payload.email
