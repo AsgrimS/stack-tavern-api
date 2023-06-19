@@ -24,7 +24,12 @@
           "type_info": "Timestamptz"
         }
       ],
-      "nullable": [false, false, false, false],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
       "parameters": {
         "Left": []
       }
@@ -55,9 +60,16 @@
           "type_info": "Timestamptz"
         }
       ],
-      "nullable": [false, false, false, false],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
       "parameters": {
-        "Left": ["Int4"]
+        "Left": [
+          "Int4"
+        ]
       }
     },
     "query": "SELECT * FROM users WHERE id = $1"
@@ -67,7 +79,10 @@
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Left": ["Varchar", "Varchar"]
+        "Left": [
+          "Varchar",
+          "Varchar"
+        ]
       }
     },
     "query": "INSERT INTO users (username, email) VALUES ($1, $2)"
