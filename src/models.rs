@@ -16,7 +16,7 @@ impl User {
     pub async fn get(user_id: &i32) -> Result<Self, Error> {
         let pool = get_connection_pool().await;
 
-        sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", user_id)
+        sqlx::query_as!(Self, "SELECT * FROM users WHERE id = $1", user_id)
             .fetch_one(&pool)
             .await
     }
@@ -24,7 +24,7 @@ impl User {
     pub async fn get_all() -> Result<Vec<Self>, Error> {
         let pool = get_connection_pool().await;
 
-        sqlx::query_as!(User, "SELECT * FROM users")
+        sqlx::query_as!(Self, "SELECT * FROM users")
             .fetch_all(&pool)
             .await
     }
