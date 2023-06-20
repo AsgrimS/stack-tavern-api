@@ -22,15 +22,6 @@ async fn get_user(Path(user_id): Path<i32>) -> Response {
     Json(user).into_response()
 }
 
-async fn get_users() -> Response {
-    let Ok(users) = User::get_all()
-        .await else {
-        return StatusCode::NOT_FOUND.into_response();
-    };
-
-    Json(users).into_response()
-}
-
 async fn create_user(Json(payload): Json<CreateUser>) -> Response {
     let Ok(_) = User::create(&payload)
     .await else {
@@ -51,4 +42,13 @@ async fn delete_user(Path(user_id): Path<i32>) -> Response {
     };
 
     StatusCode::NO_CONTENT.into_response()
+}
+
+async fn get_users() -> Response {
+    let Ok(users) = User::get_all()
+        .await else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+
+    Json(users).into_response()
 }
