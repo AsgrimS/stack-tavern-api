@@ -7,7 +7,7 @@ use axum::{
 };
 
 use crate::db::Crud;
-use crate::models::{CreateUser, User};
+use crate::models::user::{CreateUser, User};
 
 pub fn users_router() -> Router {
     Router::new()

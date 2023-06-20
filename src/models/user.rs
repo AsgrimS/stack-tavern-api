@@ -4,12 +4,7 @@ use sqlx::{Error, FromRow};
 
 use crate::db::{get_connection_pool, Crud};
 
-/// This trait is used to implement the CRUD operations for the models.
-/// it contains the name of the table in the database.
-pub trait TableModel {
-    ///  The name of the table in the database.
-    const TABLE_NAME: &'static str;
-}
+use super::TableModel;
 
 #[derive(Serialize, FromRow)]
 pub struct User {
