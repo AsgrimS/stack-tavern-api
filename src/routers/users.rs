@@ -6,6 +6,7 @@ use axum::{
     Json, Router,
 };
 
+use crate::db::Crud;
 use crate::models::{CreateUser, User};
 
 pub fn users_router() -> Router {
