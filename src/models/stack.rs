@@ -48,4 +48,5 @@ impl Crud for Stack {}
 pub struct CreateStack {
     pub name: String,
     pub description: Option<String>,
+    pub user_id: i32,
 }
