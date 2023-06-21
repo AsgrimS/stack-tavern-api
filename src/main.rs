@@ -9,8 +9,8 @@ mod db;
 mod models;
 mod routers;
 
-use routers::stacks::stacks_router;
-use routers::users::users_router;
+use crate::routers::stacks::stacks_router;
+use crate::routers::users::users_router;
 
 #[tokio::main]
 async fn main() {
