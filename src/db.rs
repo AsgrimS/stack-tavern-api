@@ -3,12 +3,24 @@ use std::env;
 use axum::async_trait;
 use sqlx::PgPool;
 use sqlx::{postgres::PgRow, Error, FromRow};
+use tokio::sync::OnceCell;
 
 use crate::models::TableModel;
 
-pub async fn get_connection_pool() -> PgPool {
+struct DBPool {
+    pool: PgPool,
+}
+
+async fn initialize_pool() -> DBPool {
     let url = env::var("DATABASE_URL").expect("database URL to be in .env");
-    sqlx::postgres::PgPool::connect(url.as_str()).await.unwrap()
+    let pool = sqlx::postgres::PgPool::connect(url.as_str()).await.unwrap();
+    DBPool { pool }
+}
+
+static POOL: OnceCell<DBPool> = OnceCell::const_new();
+
+pub async fn get_connection_pool<'a>() -> &'a PgPool {
+    &POOL.get_or_init(initialize_pool).await.pool
 }
 
 /// This trait is used to implement the CRUD operations for the models.
@@ -23,7 +35,7 @@ pub trait Crud {
     {
         let pool = get_connection_pool().await;
         let query = format!("SELECT * FROM {} WHERE id = {}", Self::TABLE_NAME, item_id);
-        let item: Self = sqlx::query_as(query.as_str()).fetch_one(&pool).await?;
+        let item: Self = sqlx::query_as(query.as_str()).fetch_one(pool).await?;
 
         Ok(Box::new(item))
     }
@@ -35,7 +47,7 @@ pub trait Crud {
     {
         let pool = get_connection_pool().await;
         let query = format!("SELECT * FROM {}", Self::TABLE_NAME);
-        let items = sqlx::query_as(query.as_str()).fetch_all(&pool).await?;
+        let items = sqlx::query_as(query.as_str()).fetch_all(pool).await?;
 
         Ok(items.into_iter().map(|item| Box::new(item)).collect())
     }
@@ -47,7 +59,7 @@ pub trait Crud {
     {
         let pool = get_connection_pool().await;
         let query = format!("DELETE FROM {} WHERE id = {}", Self::TABLE_NAME, item_id);
-        let rows = sqlx::query(query.as_str()).execute(&pool).await?;
+        let rows = sqlx::query(query.as_str()).execute(pool).await?;
         Ok(rows.rows_affected())
     }
 }

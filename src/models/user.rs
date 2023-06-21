@@ -29,7 +29,7 @@ impl User {
             payload.email,
             "password"
         )
-        .execute(&pool)
+        .execute(pool)
         .await?;
 
         Ok(())

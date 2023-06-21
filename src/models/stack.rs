@@ -28,7 +28,7 @@ impl Stack {
             payload.description,
             user_id
         )
-        .execute(&pool)
+        .execute(pool)
         .await?;
         Ok(())
     }
@@ -36,7 +36,7 @@ impl Stack {
     pub async fn get_user_stacks(user_id: i32) -> Result<Vec<Self>, Error> {
         let pool = get_connection_pool().await;
         let stacks = sqlx::query_as!(Stack, "SELECT * FROM stacks WHERE user_id = $1", user_id)
-            .fetch_all(&pool)
+            .fetch_all(pool)
             .await?;
         Ok(stacks)
     }
