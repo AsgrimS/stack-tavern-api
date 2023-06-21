@@ -25,7 +25,8 @@ async fn get_stack(Path(stack_id): Path<i32>) -> Response {
 }
 
 async fn create_stack(Json(payload): Json<CreateStack>) -> Response {
-    let Ok(_) = Stack::create(&payload, &1).await else {
+    let user_id = 2; // TODO: get from current user
+    let Ok(_) = Stack::create(&payload, &user_id).await else {
         return StatusCode::BAD_REQUEST.into_response();
     };
 
