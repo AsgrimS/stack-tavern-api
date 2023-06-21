@@ -7,20 +7,15 @@ use tokio::sync::OnceCell;
 
 use crate::models::TableModel;
 
-struct DBPool {
-    pool: PgPool,
-}
-
-async fn initialize_pool() -> DBPool {
+async fn initialize_pool() -> PgPool {
     let url = env::var("DATABASE_URL").expect("database URL to be in .env");
-    let pool = sqlx::postgres::PgPool::connect(url.as_str()).await.unwrap();
-    DBPool { pool }
+    sqlx::postgres::PgPool::connect(url.as_str()).await.unwrap()
 }
 
-static POOL: OnceCell<DBPool> = OnceCell::const_new();
+static POOL: OnceCell<PgPool> = OnceCell::const_new();
 
 pub async fn get_connection_pool<'a>() -> &'a PgPool {
-    &POOL.get_or_init(initialize_pool).await.pool
+    POOL.get_or_init(initialize_pool).await
 }
 
 /// This trait is used to implement the CRUD operations for the models.
