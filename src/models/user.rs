@@ -9,8 +9,9 @@ use super::TableModel;
 #[derive(Serialize, FromRow)]
 pub struct User {
     pub id: i32,
-    pub username: String,
+    pub name: String,
     pub email: String,
+    pub password: String,
     pub created_at: DateTime<Utc>,
 }
 
@@ -23,9 +24,10 @@ impl User {
         let pool = get_connection_pool().await;
 
         sqlx::query!(
-            "INSERT INTO users (username, email) VALUES ($1, $2)",
-            payload.username,
-            payload.email
+            "INSERT INTO users (name, email, password) VALUES ($1, $2, $3)",
+            payload.name,
+            payload.email,
+            "password"
         )
         .execute(&pool)
         .await?;
@@ -38,6 +40,6 @@ impl Crud for User {}
 
 #[derive(Deserialize)]
 pub struct CreateUser {
-    pub username: String,
+    pub name: String,
     pub email: String,
 }

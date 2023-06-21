@@ -1,3 +1,4 @@
+pub mod stack;
 pub mod user;
 
 /// This trait is used to implement the CRUD operations for the models.

@@ -8,7 +8,9 @@ use tracing_subscriber::fmt;
 mod db;
 mod models;
 mod routers;
-use crate::routers::users::users_router;
+
+use routers::stacks::stacks_router;
+use routers::users::users_router;
 
 #[tokio::main]
 async fn main() {
@@ -34,6 +36,7 @@ fn app() -> Router {
     Router::new()
         .route("/", get(|| async { "Hello, world!" }))
         .nest("/users", users_router())
+        .nest("/stacks", stacks_router())
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
