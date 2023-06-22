@@ -1,6 +1,8 @@
-use axum::{routing::get, Router};
+use axum::{http::Method, routing::get, Router};
+
 use dotenv::dotenv;
 use std::net::SocketAddr;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 use tracing_subscriber::fmt;
@@ -37,6 +39,13 @@ fn app() -> Router {
         .route("/", get(|| async { "Hello, world!" }))
         .nest("/users", users_router())
         .nest("/stacks", stacks_router())
+        .layer(
+            CorsLayer::new()
+                // allow `GET` and `POST` when accessing the resource
+                .allow_methods([Method::GET, Method::POST])
+                // allow requests from any origin
+                .allow_origin(Any),
+        )
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
