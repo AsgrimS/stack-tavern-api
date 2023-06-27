@@ -1,18 +1,46 @@
 use axum::{
     extract::Path,
-    http::StatusCode,
+    extract::TypedHeader,
+    headers::authorization::{Authorization, Bearer},
+    http::{Request, StatusCode},
+    middleware::{self, Next},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, post},
     Json, Router,
 };
 
 use crate::db::Crud;
 use crate::models::stack::{CreateStack, Stack};
 
+async fn auth<B>(
+    // run the `TypedHeader` extractor
+    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
+    // you can also add more extractors here but the last
+    // extractor must implement `FromRequest` which
+    // `Request` does
+    request: Request<B>,
+    next: Next<B>,
+) -> Result<Response, StatusCode> {
+    let debug_token = auth.token();
+    // if token_is_valid(auth.token()) {
+    //     let response = next.run(request).await;
+    //     Ok(response)
+    // } else {
+    //     Err(StatusCode::UNAUTHORIZED)
+    // }
+    let response = next.run(request).await;
+    Ok(response)
+}
+
 pub fn stacks_router() -> Router {
     Router::new()
         .route("/:stack_id", get(get_stack).delete(delete_stack))
-        .route("/", get(get_stacks).post(create_stack))
+        .route(
+            "/",
+            post(create_stack)
+                .route_layer(middleware::from_fn(auth))
+                .get(get_stacks),
+        )
         .route("/user/:user_id", get(get_user_stacks))
 }
 

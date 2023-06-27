@@ -1,4 +1,8 @@
-use axum::{http::Method, routing::get, Router};
+use axum::{
+    http::{Method, StatusCode},
+    routing::get,
+    Router,
+};
 
 use dotenv::dotenv;
 use std::net::SocketAddr;
@@ -36,7 +40,7 @@ async fn main() {
 
 fn app() -> Router {
     Router::new()
-        .route("/", get(|| async { "Hello, world!" }))
+        .route("/health", get(|| async { StatusCode::OK }))
         .nest("/users", users_router())
         .nest("/stacks", stacks_router())
         .layer(
