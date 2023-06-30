@@ -12,6 +12,7 @@ use openidconnect::{
     reqwest::async_http_client,
     AccessToken, ClientId, ClientSecret, IntrospectionUrl, IssuerUrl, TokenIntrospectionResponse,
 };
+use sqlx::types::Uuid;
 use tokio::sync::OnceCell;
 
 async fn initalize_openid_client() -> CoreClient {
@@ -42,23 +43,11 @@ async fn initalize_openid_client() -> CoreClient {
 
 static AUTH_CLIENT: OnceCell<CoreClient> = OnceCell::const_new();
 
-pub async fn get_openid_client<'a>() -> &'a CoreClient {
+async fn get_openid_client<'a>() -> &'a CoreClient {
     AUTH_CLIENT.get_or_init(initalize_openid_client).await
 }
 
-pub async fn require_token<B>(
-    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
-    request: Request<B>,
-    next: Next<B>,
-) -> Result<Response, StatusCode> {
-    if verify_token(auth.token()).await {
-        Ok(next.run(request).await)
-    } else {
-        Err(StatusCode::UNAUTHORIZED)
-    }
-}
-
-async fn verify_token(token: &str) -> bool {
+async fn verify_token(token: &str) -> Option<Uuid> {
     let token = AccessToken::new(token.to_string());
 
     let client = get_openid_client().await;
@@ -69,5 +58,31 @@ async fn verify_token(token: &str) -> bool {
         .await
         .unwrap();
 
-    introspect.active()
+    if !introspect.active() {
+        return None;
+    };
+
+    let Some(user_uuid) = introspect.sub() else {
+        return None;
+    };
+
+    let Ok(user_uuid) = Uuid::try_parse(user_uuid) else {
+        return None;
+    };
+
+    Some(user_uuid)
+}
+
+pub async fn require_token<B>(
+    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
+    mut request: Request<B>,
+    next: Next<B>,
+) -> Result<Response, StatusCode> {
+    let Some(user_uuid) = verify_token(auth.token()).await else {
+        return Err(StatusCode::UNAUTHORIZED);
+    };
+
+    request.extensions_mut().insert(user_uuid);
+
+    Ok(next.run(request).await)
 }

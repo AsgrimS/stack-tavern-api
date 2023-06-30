@@ -4,8 +4,9 @@ use axum::{
     middleware,
     response::{IntoResponse, Response},
     routing::{get, post},
-    Json, Router,
+    Extension, Json, Router,
 };
+use sqlx::types::Uuid;
 
 use crate::models::stack::{CreateStack, Stack};
 use crate::{auth::require_token, db::Crud};
@@ -19,7 +20,7 @@ pub fn stacks_router() -> Router {
                 .route_layer(middleware::from_fn(require_token))
                 .get(get_stacks),
         )
-        .route("/user/:user_id", get(get_user_stacks))
+        .route("/user/:user_uuid", get(get_user_stacks))
 }
 
 async fn get_stack(Path(stack_id): Path<i32>) -> Response {
@@ -30,8 +31,11 @@ async fn get_stack(Path(stack_id): Path<i32>) -> Response {
     Json(stack).into_response()
 }
 
-async fn create_stack(Json(payload): Json<CreateStack>) -> Response {
-    let Ok(_) = Stack::create(&payload, &1).await else {
+async fn create_stack(
+    Extension(user_uuid): Extension<Uuid>,
+    Json(payload): Json<CreateStack>,
+) -> Response {
+    let Ok(_) = Stack::create(&payload, &user_uuid).await else {
         return StatusCode::BAD_REQUEST.into_response();
     };
 
@@ -58,8 +62,12 @@ async fn get_stacks() -> Response {
     Json(stacks).into_response()
 }
 
-async fn get_user_stacks(Path(user_id): Path<i32>) -> Response {
-    let Ok(stacks) = Stack::get_user_stacks(user_id).await else {
+async fn get_user_stacks(Path(user_uuid): Path<String>) -> Response {
+    let Ok(user_uuid) = Uuid::try_parse(&user_uuid) else {
+        return StatusCode::BAD_REQUEST.into_response();
+    };
+
+    let Ok(stacks) = Stack::get_user_stacks(&user_uuid).await else {
         return StatusCode::NOT_FOUND.into_response();
     };
 

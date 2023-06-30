@@ -18,12 +18,14 @@ sqlx = { version = "0.6.3", features = [
   "macros",
   "chrono",
   "offline",
+  "uuid",
 ] }
 tokio = { version = "1.28.2", features = ["full"] }
 tower-http = { version = "0.4.0", features = ["trace", "cors"] }
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+tower = { version = "0.4.13", features = ["util"] }
+
 
 [dev-dependencies]
 rstest = "0.17.0"
-tower = { version = "0.4.13", features = ["util"] }

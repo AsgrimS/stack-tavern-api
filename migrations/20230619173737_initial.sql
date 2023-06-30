@@ -1,6 +1,6 @@
 -- Create the users table
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    uuid UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE stacks (
     name VARCHAR(255) NOT NULL,
     description VARCHAR(500),
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE
+    user_uuid UUID NOT NULL REFERENCES users (uuid) ON DELETE CASCADE
 );
 
 -- Create an index on the stacks table for the name column
