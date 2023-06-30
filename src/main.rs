@@ -11,6 +11,7 @@ use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 use tracing_subscriber::fmt;
 
+mod auth;
 mod db;
 mod models;
 mod routers;
