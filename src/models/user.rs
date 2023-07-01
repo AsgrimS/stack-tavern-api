@@ -1,38 +1,26 @@
-use std::str::FromStr;
-
 use chrono::{DateTime, Utc};
-use serde::{
-    ser::{Serialize, SerializeStruct, Serializer},
-    Deserialize,
-};
+use serde::{ser::Serializer, Serialize};
 
 use sqlx::{types::Uuid, Error, FromRow};
 
-use crate::db::get_connection_pool;
+use crate::db::{get_connection_pool, Crud};
 
 use super::TableModel;
 
-#[derive(FromRow)]
+#[derive(FromRow, Serialize)]
 pub struct User {
-    pub uuid: Uuid,
+    pub id: i32,
+    #[serde(serialize_with = "uuid_serialize")]
+    pub identity_uuid: Uuid,
     pub name: String,
-    pub email: String,
-    pub password: String,
     pub created_at: DateTime<Utc>,
 }
 
-impl Serialize for User {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Stack", 4)?;
-        state.serialize_field("uuid", &self.uuid.to_string())?;
-        state.serialize_field("name", &self.name)?;
-        state.serialize_field("email", &self.email)?;
-        state.serialize_field("created_at", &self.created_at)?;
-        state.end()
-    }
+fn uuid_serialize<S>(uuid: &Uuid, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&uuid.to_string())
 }
 
 impl TableModel for User {
@@ -40,15 +28,13 @@ impl TableModel for User {
 }
 
 impl User {
-    pub async fn create(payload: &CreateUser) -> Result<(), Error> {
+    pub async fn create(name: &str, identity_uuid: &Uuid) -> Result<(), Error> {
         let pool = get_connection_pool().await;
 
         sqlx::query!(
-            "INSERT INTO users (uuid, name, email, password) VALUES ($1, $2, $3, $4)",
-            Uuid::from_str("a28f46ba-1ac4-4df9-bc28-f62bdaadf45d").unwrap(),
-            payload.name,
-            payload.email,
-            "password"
+            "INSERT INTO users (identity_uuid, name) VALUES ($1, $2)",
+            identity_uuid,
+            name,
         )
         .execute(pool)
         .await?;
@@ -56,37 +42,61 @@ impl User {
         Ok(())
     }
 
-    pub async fn get(user_uuid: &Uuid) -> Result<Self, Error> {
+    pub async fn get_by_uuid(identity_uuid: &Uuid) -> Result<Self, Error> {
         let pool = get_connection_pool().await;
-        let user = sqlx::query_as!(User, "SELECT * FROM users WHERE uuid = $1", user_uuid)
-            .fetch_one(pool)
-            .await?;
+        let user = sqlx::query_as!(
+            User,
+            "SELECT * FROM users WHERE identity_uuid = $1",
+            identity_uuid
+        )
+        .fetch_one(pool)
+        .await?;
 
         Ok(user)
     }
 
-    pub async fn get_all() -> Result<Vec<Self>, Error> {
-        let pool = get_connection_pool().await;
-        let users = sqlx::query_as!(User, "SELECT * FROM users")
-            .fetch_all(pool)
-            .await?;
+    // pub async fn get(user_uuid: &Uuid) -> Result<Self, Error> {
+    //     let pool = get_connection_pool().await;
+    //     let user = sqlx::query_as!(User, "SELECT * FROM users WHERE uuid = $1", user_uuid)
+    //         .fetch_one(pool)
+    //         .await?;
+    //
+    //     Ok(user)
+    // }
 
-        Ok(users)
-    }
+    // pub async fn get_all() -> Result<Vec<Self>, Error> {
+    //     let pool = get_connection_pool().await;
+    //     let users = sqlx::query_as!(User, "SELECT * FROM users")
+    //         .fetch_all(pool)
+    //         .await?;
+    //
+    //     Ok(users)
+    // }
 
-    pub async fn delete(user_uuid: &Uuid) -> Result<u64, Error> {
-        let pool = get_connection_pool().await;
-        let deleted_rows = sqlx::query!("DELETE FROM users WHERE uuid = $1", user_uuid)
-            .execute(pool)
-            .await?
-            .rows_affected();
-
-        Ok(deleted_rows)
-    }
+    // pub async fn delete(user_uuid: &Uuid) -> Result<u64, Error> {
+    //     let pool = get_connection_pool().await;
+    //     let deleted_rows = sqlx::query!("DELETE FROM users WHERE uuid = $1", user_uuid)
+    //         .execute(pool)
+    //         .await?
+    //         .rows_affected();
+    //
+    //     Ok(deleted_rows)
+    // }
 }
 
-#[derive(Deserialize)]
-pub struct CreateUser {
-    pub name: String,
-    pub email: String,
-}
+impl Crud for User {}
+
+// #[derive(Deserialize)]
+// pub struct CreateUser {
+//     pub name: String,
+//     #[serde(deserialize_with = "uuid_deserialize")]
+//     pub identity_uuid: Uuid,
+// }
+//
+// fn uuid_deserialize<'de, D>(deserializer: D) -> Result<Uuid, D::Error>
+// where
+//     D: serde::Deserializer<'de>,
+// {
+//     let s = String::deserialize(deserializer)?;
+//     Uuid::from_str(&s).map_err(serde::de::Error::custom)
+// }

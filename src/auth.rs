@@ -15,6 +15,8 @@ use openidconnect::{
 use sqlx::types::Uuid;
 use tokio::sync::OnceCell;
 
+use crate::models::user::User;
+
 async fn initalize_openid_client() -> CoreClient {
     let client_id =
         ClientId::new(env::var("CLIENT_ID").expect("Missing the CLIENT_ID environment variable."));
@@ -62,12 +64,16 @@ async fn verify_token(token: &str) -> Option<Uuid> {
         return None;
     };
 
-    let Some(user_uuid) = introspect.sub() else {
+    let (Some(sub), Some(name)) = (introspect.sub(), introspect.username()) else {
         return None;
     };
 
-    let Ok(user_uuid) = Uuid::try_parse(user_uuid) else {
+    let Ok(user_uuid) = Uuid::try_parse(sub) else {
         return None;
+    };
+
+    if (User::get_by_uuid(&user_uuid).await).is_err() {
+        User::create(name, &user_uuid).await.ok();
     };
 
     Some(user_uuid)

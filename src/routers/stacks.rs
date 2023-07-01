@@ -20,7 +20,7 @@ pub fn stacks_router() -> Router {
                 .route_layer(middleware::from_fn(require_token))
                 .get(get_stacks),
         )
-        .route("/user/:user_uuid", get(get_user_stacks))
+        .route("/user/:user_id", get(get_user_stacks))
 }
 
 async fn get_stack(Path(stack_id): Path<i32>) -> Response {
@@ -62,12 +62,8 @@ async fn get_stacks() -> Response {
     Json(stacks).into_response()
 }
 
-async fn get_user_stacks(Path(user_uuid): Path<String>) -> Response {
-    let Ok(user_uuid) = Uuid::try_parse(&user_uuid) else {
-        return StatusCode::BAD_REQUEST.into_response();
-    };
-
-    let Ok(stacks) = Stack::get_user_stacks(&user_uuid).await else {
+async fn get_user_stacks(Path(user_id): Path<i32>) -> Response {
+    let Ok(stacks) = Stack::get_user_stacks(&user_id).await else {
         return StatusCode::NOT_FOUND.into_response();
     };
 
