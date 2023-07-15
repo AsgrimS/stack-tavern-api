@@ -18,10 +18,8 @@ pub async fn get_connection_pool<'a>() -> &'a PgPool {
     POOL.get_or_init(initialize_pool).await
 }
 
-/// This trait is used to implement the CRUD operations for the models.
-/// It does not implement create operation, so it must be implemented by the model.
 #[async_trait]
-pub trait Crud {
+pub trait Get {
     /// Gets an item from the database by id.
     /// Returns a Result with a Boxed item or sqlx::Error.
     async fn get(item_id: &i32) -> Result<Box<Self>, Error>
@@ -34,6 +32,10 @@ pub trait Crud {
 
         Ok(Box::new(item))
     }
+}
+
+#[async_trait]
+pub trait GetAll {
     /// Gets all items from the database.
     /// Returns a Result with a vector of Boxed items or sqlx::Error.
     async fn get_all() -> Result<Vec<Box<Self>>, Error>
@@ -46,6 +48,10 @@ pub trait Crud {
 
         Ok(items.into_iter().map(|item| Box::new(item)).collect())
     }
+}
+
+#[async_trait]
+pub trait Delete {
     /// Deletes an item from the database by id.
     /// Returns a Result with the number of affected rows or sqlx::Error.
     async fn delete(item_id: &i32) -> Result<u64, Error>

@@ -2,7 +2,7 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     identity_uuid UUID NOT NULL UNIQUE,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(40) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp
 );
 

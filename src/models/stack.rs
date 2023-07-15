@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{types::Uuid, Error, FromRow};
 
-use crate::db::{get_connection_pool, Crud};
+use crate::db::{get_connection_pool, Delete, Get};
 
 use super::TableModel;
 
@@ -13,6 +13,16 @@ pub struct Stack {
     pub description: Option<String>,
     pub created_at: DateTime<Utc>,
     pub user_id: i32,
+}
+
+#[derive(Serialize)]
+pub struct StackOut {
+    pub id: i32,
+    pub name: String,
+    pub description: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub user_id: i32,
+    pub author_name: String,
 }
 
 impl TableModel for Stack {
@@ -48,9 +58,22 @@ impl Stack {
 
         Ok(stacks)
     }
+
+    pub async fn get_all() -> Result<Vec<StackOut>, Error> {
+        let pool = get_connection_pool().await;
+
+        let stacks = sqlx::query_as!(
+            StackOut ,"SELECT stacks.*, users.name AS author_name FROM stacks INNER JOIN users ON stacks.user_id = users.id"
+        )
+        .fetch_all(pool)
+        .await?;
+
+        Ok(stacks)
+    }
 }
 
-impl Crud for Stack {}
+impl Get for Stack {}
+impl Delete for Stack {}
 
 #[derive(Deserialize)]
 pub struct CreateStack {

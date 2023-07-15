@@ -9,7 +9,10 @@ use axum::{
 use sqlx::types::Uuid;
 
 use crate::models::stack::{CreateStack, Stack};
-use crate::{auth::require_token, db::Crud};
+use crate::{
+    auth::require_token,
+    db::{Delete, Get},
+};
 
 pub fn stacks_router() -> Router {
     Router::new()

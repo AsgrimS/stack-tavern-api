@@ -3,7 +3,7 @@ use serde::{ser::Serializer, Serialize};
 
 use sqlx::{types::Uuid, Error, FromRow};
 
-use crate::db::{get_connection_pool, Crud};
+use crate::db::{get_connection_pool, Get, GetAll};
 
 use super::TableModel;
 
@@ -84,7 +84,8 @@ impl User {
     // }
 }
 
-impl Crud for User {}
+impl Get for User {}
+impl GetAll for User {}
 
 // #[derive(Deserialize)]
 // pub struct CreateUser {
