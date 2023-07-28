@@ -1,2 +1,7 @@
 # stack-tavern-api
-W.I.P
+
+## Keycloak
+
+- [localhost:8080](http://localhost:8080/)
+- User: `user`
+- Password: `bitnami`

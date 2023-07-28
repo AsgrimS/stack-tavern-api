@@ -16,6 +16,13 @@ pub struct User {
     pub created_at: DateTime<Utc>,
 }
 
+#[derive(Serialize)]
+pub struct UserOut {
+    pub id: i32,
+    pub name: String,
+    pub created_at: DateTime<Utc>,
+}
+
 fn uuid_serialize<S>(uuid: &Uuid, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,

@@ -3,4 +3,11 @@ dev:
 
 test:
 	cargo test
+
+start_services:
+	docker compose up -d
+
+stop_services:
+	docker compose stop
+
 	
