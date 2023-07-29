@@ -27,6 +27,13 @@ pub struct StackOut {
     pub technologies: Vec<Technology>,
 }
 
+#[derive(Deserialize)]
+pub struct CreateStack {
+    pub name: String,
+    pub description: Option<String>,
+    pub technologies: Vec<CreateTechnology>,
+}
+
 impl TableModel for Stack {
     const TABLE_NAME: &'static str = "stacks";
 }
@@ -160,10 +167,3 @@ impl Stack {
 
 impl Get for Stack {}
 impl Delete for Stack {}
-
-#[derive(Deserialize)]
-pub struct CreateStack {
-    pub name: String,
-    pub description: Option<String>,
-    pub technologies: Vec<CreateTechnology>,
-}

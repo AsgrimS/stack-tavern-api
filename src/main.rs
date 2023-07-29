@@ -17,6 +17,7 @@ mod models;
 mod routers;
 
 use crate::routers::stacks::stacks_router;
+use crate::routers::technologies::technologies_router;
 use crate::routers::users::users_router;
 
 #[tokio::main]
@@ -44,6 +45,7 @@ fn app() -> Router {
         .route("/health", get(|| async { StatusCode::OK }))
         .nest("/users", users_router())
         .nest("/stacks", stacks_router())
+        .nest("/technologies", technologies_router())
         .layer(
             CorsLayer::new()
                 // allow `GET` and `POST` when accessing the resource

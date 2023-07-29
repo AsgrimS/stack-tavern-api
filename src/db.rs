@@ -1,15 +1,21 @@
 use std::env;
+use std::str::FromStr;
 
 use axum::async_trait;
-use sqlx::PgPool;
+use sqlx::postgres::PgConnectOptions;
 use sqlx::{postgres::PgRow, Error, FromRow};
+use sqlx::{ConnectOptions, PgPool};
 use tokio::sync::OnceCell;
 
 use crate::models::TableModel;
 
 async fn initialize_pool() -> PgPool {
     let url = env::var("DATABASE_URL").expect("database URL to be in .env");
-    sqlx::postgres::PgPool::connect(url.as_str()).await.unwrap()
+    let options = PgConnectOptions::from_str(url.as_str())
+        .unwrap()
+        .disable_statement_logging()
+        .clone();
+    sqlx::postgres::PgPool::connect_with(options).await.unwrap()
 }
 
 static POOL: OnceCell<PgPool> = OnceCell::const_new();
