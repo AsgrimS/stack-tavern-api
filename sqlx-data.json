@@ -1,30 +1,68 @@
 {
   "db": "PostgreSQL",
-  "26e7e05427bc7dabcd7815d27764fda2baf4cfe60a2d2d6ee2a1f773dccbbce2": {
+  "1866e08ccce3787fadc6302fe153835ed7f76480ffb934054dafe1e126394ebb": {
     "describe": {
       "columns": [
         {
           "name": "id",
           "ordinal": 0,
           "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT id FROM users WHERE identity_uuid = $1"
+  },
+  "2061489f547355c10c14f87a502dcb6c413a43ab1388b473713419924bb48864": {
+    "describe": {
+      "columns": [
+        {
+          "name": "stack_id",
+          "ordinal": 0,
+          "type_info": "Int4"
         },
         {
-          "name": "username",
+          "name": "stack_name",
           "ordinal": 1,
           "type_info": "Varchar"
         },
         {
-          "name": "email",
+          "name": "stack_description",
           "ordinal": 2,
           "type_info": "Varchar"
         },
         {
-          "name": "created_at",
+          "name": "stack_created_at",
           "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 4,
+          "type_info": "Int4"
+        },
+        {
+          "name": "user_name",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "user_created_at",
+          "ordinal": 6,
           "type_info": "Timestamptz"
         }
       ],
       "nullable": [
+        false,
+        false,
+        true,
         false,
         false,
         false,
@@ -34,9 +72,9 @@
         "Left": []
       }
     },
-    "query": "SELECT * FROM users"
+    "query": "\n             SELECT \n                 s.id AS stack_id, \n                 s.name AS stack_name, \n                 s.description as stack_description, \n                 s.created_at as stack_created_at, \n                 u.id AS user_id, \n                 u.name AS user_name, \n                 u.created_at as user_created_at \n             FROM \n                 stacks AS s \n             INNER JOIN \n                 users AS u ON s.user_id = u.id\n            "
   },
-  "843923b9a0257cf80f1dff554e7dc8fdfc05f489328e8376513124dfb42996e3": {
+  "2ec8716c1ac7c419b4f6cce5845955cc3b5e88c4bfe3237db2c19057705b3c13": {
     "describe": {
       "columns": [
         {
@@ -45,12 +83,12 @@
           "type_info": "Int4"
         },
         {
-          "name": "username",
+          "name": "identity_uuid",
           "ordinal": 1,
-          "type_info": "Varchar"
+          "type_info": "Uuid"
         },
         {
-          "name": "email",
+          "name": "name",
           "ordinal": 2,
           "type_info": "Varchar"
         },
@@ -68,23 +106,256 @@
       ],
       "parameters": {
         "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT * FROM users WHERE identity_uuid = $1"
+  },
+  "47b2451e663b84a3ab5a6952f771549fa0f0e07be6df69f370754f686f96f7bd": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
           "Int4"
         ]
       }
     },
-    "query": "SELECT * FROM users WHERE id = $1"
+    "query": "INSERT INTO stacks (name, description, user_id) VALUES ($1, $2, $3) RETURNING id"
   },
-  "e8fc9d1fb67be8a7520980ff1864eb58b0297470490c731c2afe20eefea61f8d": {
+  "713f038672312eac299bc49c1361ff1f910e2259c4f4c4487d194d468ef383d7": {
     "describe": {
-      "columns": [],
-      "nullable": [],
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 4,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
       "parameters": {
         "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "SELECT * FROM stacks WHERE user_id = $1"
+  },
+  "a68a6d0cce9477788714ee1f494d390f96da844ac172b2e9f16a64c408ce0aba": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
           "Varchar",
           "Varchar"
         ]
       }
     },
-    "query": "INSERT INTO users (username, email) VALUES ($1, $2)"
+    "query": "INSERT INTO technologies (name, description, purpose) VALUES ($1, $2, $3) RETURNING id"
+  },
+  "b679cd71ab0c466e320d95fbc9af33ac92c8763ef4b085b6631a5489c836022f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "purpose",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 4,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n\t            *\n            FROM technologies\n            WHERE name % $1\n            ORDER BY SIMILARITY(name,$1) \n            DESC\n            LIMIT 5\n            "
+  },
+  "c05199f84715378609bf587528f1e420b3e2769841f99ef4445a9523f41da1ac": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "purpose",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 4,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n                    SELECT\n                        t.*\n                    FROM \n                        technologies AS t\n                    INNER JOIN\n                        stack_technology AS st ON t.id = st.technology_id\n                    WHERE\n                        st.stack_id = $1\n                "
+  },
+  "d13c935e9e75cedf7ca6132750d55300b1739dfa5cf461bacbb9916b7e03a788": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO users (identity_uuid, name) VALUES ($1, $2)"
+  },
+  "dee51822a939f5b04113e07b1a76faf437c4e60748e635e2f046b182f05b1879": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "purpose",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 4,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT * from technologies WHERE name = $1"
+  },
+  "f506d6d2b9c87f4a394897dd591607745aed8beca7c3fac1a648ec60190e7c0f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Int4"
+        ]
+      }
+    },
+    "query": "INSERT INTO stack_technology (stack_id, technology_id) VALUES ($1, $2)"
   }
 }
